@@ -17,14 +17,19 @@ public class RayTracer {
             Scene scene = new Scene(args[0]);
             File image = scene.getOutputFile();
             
-            int width = (int) scene.cam.width;
-            int height = (int) scene.cam.height;
+            int width = (int) scene.getCam().getPlaneWidth();
+            int height = (int) scene.getCam().getPlaneHeight();
 
             BufferedImage buffer = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);            
-
             for (int i = 0; i < height; ++i) {
                 for (int j = 0; j < width; ++j) {
-                    buffer.setRGB(j, i, scene.getBackgroundColor());
+                    Ray ray = scene.getCam().makeRay(j, i);
+                    for(Sphere s : scene.spheres) {
+                        if (s.hit(ray)) {
+                            buffer.setRGB(j, i, s.getColor());
+                        }
+                        else continue;
+                    }
                 }
             }
 

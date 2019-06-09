@@ -22,17 +22,17 @@ public class Vector {
     }
 
     public Vector plus(Vector v) {
-        double newX = this.x += v.x;
-        double newY = this.y += v.y;
-        double newZ = this.z += v.z;
+        double newX = this.x + v.x;
+        double newY = this.y + v.y;
+        double newZ = this.z + v.z;
 
         return new Vector(newX, newY, newZ);
     }
 
     public Vector minus(Vector v) {
-        double newX = this.x -= v.x;
-        double newY = this.y -= v.y;
-        double newZ = this.z -= v.z;
+        double newX = this.x - v.x;
+        double newY = this.y - v.y;
+        double newZ = this.z - v.z;
 
         return new Vector(newX, newY, newZ);
     }
@@ -55,6 +55,23 @@ public class Vector {
         this.x /= magnitude;
         this.y /= magnitude;
         this.z /= magnitude;
+    }
+
+    public Vector cross(Vector v) {
+        double resX = this.y * v.z - this.z * v.y;
+        double resY = this.z * v.x - this.x * v.z;
+        double resZ = this.x * v.y - this.y * v.x;
+
+        return new Vector(resX, resY, resZ);
+    }
+
+    public Vector times(double d) {
+        
+        double resX = this.x * d;
+        double resY = this.y * d;
+        double resZ = this.z * d;       
+
+        return new Vector(resX, resY, resZ);
     }
     
     @Override

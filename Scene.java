@@ -16,7 +16,7 @@ public class Scene {
 
     private Document doc;
     private int backgroundColor;
-    public Camera cam;
+    private Camera cam;
     public Light light;
     public ArrayList<Sphere> spheres = new ArrayList<Sphere>();
 
@@ -77,4 +77,8 @@ public class Scene {
     public int getBackgroundColor() {
         return this.backgroundColor;
     }   
+
+    public Camera getCam() {
+        return this.cam;
+    }
 }

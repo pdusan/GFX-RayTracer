@@ -14,7 +14,7 @@ public class Sphere {
 
     private Point center;
     private double radius;
-    private int surfaceColor;
+    private Color surfaceColor;
     private double ka, kd, ks, exp, reflect, transmit, refract;
     private Point translateBy;
     private double scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ;
@@ -46,7 +46,7 @@ public class Sphere {
         float colGreen = Float.parseFloat(color.getAttributes().getNamedItem("g").getTextContent());
         float colBlue = Float.parseFloat(color.getAttributes().getNamedItem("b").getTextContent());
         Color col = new Color(colRed, colGreen, colBlue);
-        this.surfaceColor = col.getRGB();
+        this.surfaceColor = col;
 
         Node phong = material.getChildNodes().item(3);
         this.ka = Double.parseDouble(phong.getAttributes().getNamedItem("ka").getTextContent());
@@ -83,5 +83,40 @@ public class Sphere {
         } catch(Exception e) {
             return;
         }
+    }
+
+    public boolean hit(Ray ray) {
+
+        double b = 2 * (ray.direction.x * (ray.origin.x - this.center.x) + ray.direction.y * 
+                        (ray.origin.y - this.center.y) + ray.direction.z * (ray.origin.z - this.center.z));
+        double c = (ray.origin.x - this.center.x) * (ray.origin.x - this.center.x) + 
+                    (ray.origin.y - this.center.y) * (ray.origin.y - this.center.y) + 
+                    (ray.origin.z - this.center.z) * (ray.origin.z - this.center.z) - this.radius * this.radius;
+        double d = b*b - 4 * c;
+
+        if (d < 0) 
+            return false;
+        else {
+            double t0 = (-b - Math.sqrt(d))/2;
+            
+            if (t0 > 0)
+                return true;
+            else {
+                double t1 = (-b + Math.sqrt(b*b - 4 * c))/2;
+
+                if (t1 > 0)
+                    return true;
+                else return false;
+            }
+        }
+    }
+
+    public int getColor() {
+        int aRed = (int) (this.surfaceColor.getRed() * this.ka);
+        int aGreen = (int) (this.surfaceColor.getGreen() * this.ka);
+        int aBlue = (int) (this.surfaceColor.getBlue() * this.ka);
+
+        Color res = new Color(aRed, aGreen, aBlue);
+        return res.getRGB();
     }
 }

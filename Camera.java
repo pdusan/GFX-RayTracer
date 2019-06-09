@@ -13,14 +13,33 @@ import org.w3c.dom.Element;
 public class Camera {
     
     private Document doc;
-    private Point location, lookingAt;
+    private Point location;
+    private Point lookingAt;
     private Vector up;
-    private double fieldOfView;
-    public double width, height, bounces;
+    private double xFieldOfView;
+    private double yFieldOfView;
+    private double width;
+    private double height;
+    private double bounces;
+    private double distance;
+    private Vector u, n, v;
 
     public Camera(Document doc) {
         this.doc = doc;
         initCam();
+        
+        this.yFieldOfView = this.height * this.xFieldOfView/this.width;
+        
+        this.distance = this.width/(2 * Math.tan(Math.toRadians(this.xFieldOfView)));
+        this.n = location.minus(lookingAt).toVector();
+        this.n.normalize();
+
+        this.u = this.up.cross(this.n);
+        this.u.normalize();
+
+        this.v = this.n.cross(this.u);
+        this.v.normalize();
+
     }
 
     private void initCam() {
@@ -39,6 +58,7 @@ public class Camera {
         double upZ = Double.parseDouble(cameraOptions.item(5).getAttributes().getNamedItem("z").getTextContent());
 
         Point pos = new Point(posX, posY, posZ);
+        
         Point look = new Point(lookX, lookY, lookZ);
         Vector up = new Vector(upX, upY, upZ);
         double fov = Double.parseDouble(cameraOptions.item(7).getAttributes().getNamedItem("angle").getTextContent());
@@ -49,10 +69,35 @@ public class Camera {
         this.location = pos;
         this.lookingAt = look;
         this.up = up;
-        this.fieldOfView = fov;
+        this.xFieldOfView = fov;
         this.width = width;
         this.height = height;
         this.bounces = bounceCount;
     }
 
+    public double getPlaneWidth() {
+        return this.width;
+    }
+    
+    public double getPlaneHeight() {
+        return this.height;
+    }
+
+    public Point getLocation() {
+        return this.location;
+    }
+
+    public Ray makeRay(double p, double q) {
+
+        double x = Math.tan(Math.toRadians(this.xFieldOfView)) * ((2 * p - this.width)/this.width);
+        double y = Math.tan(Math.toRadians(this.yFieldOfView)) * ((2 * q - this.height)/this.height);
+
+        Point origin = this.location;
+        Vector direction = new Vector(x, y, -1.0);
+        direction.normalize();
+
+        Ray res = new Ray(origin, direction);
+
+        return res;
+    }
 }

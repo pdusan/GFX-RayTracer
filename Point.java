@@ -22,17 +22,17 @@ public class Point {
     }
 
     public Point plus(Point p) {
-        double newX = this.x += p.x;
-        double newY = this.y += p.y;
-        double newZ = this.z += p.z;
+        double newX = this.x + p.x;
+        double newY = this.y + p.y;
+        double newZ = this.z + p.z;
 
         return new Point(newX, newY, newZ);
     }
 
     public Point minus(Point p) {
-        double newX = this.x -= p.x;
-        double newY = this.y -= p.y;
-        double newZ = this.z -= p.z;
+        double newX = this.x - p.x;
+        double newY = this.y - p.y;
+        double newZ = this.z - p.z;
 
         return new Point(newX, newY, newZ);
     }
@@ -47,6 +47,10 @@ public class Point {
 
     public double dot(Normal n) {
         return this.x * n.x + this.y * n.y + this.z * n.z;
+    }
+
+    public Vector toVector() {
+        return new Vector(this.x, this.y, this.z);
     }
     
     @Override
