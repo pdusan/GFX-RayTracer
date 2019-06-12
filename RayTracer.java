@@ -24,9 +24,9 @@ public class RayTracer {
             for (int i = 0; i < height; ++i) {
                 for (int j = 0; j < width; ++j) {
                     Ray ray = scene.getCam().makeRay(j, i);
-                    for(Sphere s : scene.spheres) {
-                        if (s.hit(ray)) {
-                            buffer.setRGB(j, i, s.getColor());
+                    for(Shape s : scene.getShapes()) {
+                        if (s.hit(ray) > 0) {
+                            buffer.setRGB(j, i, s.getColor(s.hit(ray), ray));
                         }
                         else continue;
                     }

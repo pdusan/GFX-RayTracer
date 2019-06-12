@@ -17,8 +17,8 @@ public class Scene {
     private Document doc;
     private int backgroundColor;
     private Camera cam;
-    public Light light;
-    public ArrayList<Sphere> spheres = new ArrayList<Sphere>();
+    private Light light;
+    private ArrayList<Shape> shapes = new ArrayList<Shape>();
 
     public Scene(String inputFileName) throws Exception {
         doc = makeDoc(inputFileName);
@@ -63,7 +63,7 @@ public class Scene {
             if (surfaces.item(i).getNodeName() == "sphere") {
                 Node sphere = surfaces.item(i);
 
-                this.spheres.add(new Sphere(sphere));
+                this.shapes.add(new Sphere(sphere, this.light, this.cam));
             }
         }
     }
@@ -80,5 +80,13 @@ public class Scene {
 
     public Camera getCam() {
         return this.cam;
+    }
+
+    public Light getlight() {
+        return this.light;
+    }
+
+    public ArrayList<Shape> getShapes() {
+        return this.shapes;
     }
 }

@@ -31,14 +31,14 @@ public class Camera {
         this.yFieldOfView = this.height * this.xFieldOfView/this.width;
         
         this.distance = this.width/(2 * Math.tan(Math.toRadians(this.xFieldOfView)));
-        this.n = location.minus(lookingAt).toVector();
-        this.n.normalize();
+        // this.n = location.minus(lookingAt).toVector();
+        // this.n.normalize();
 
-        this.u = this.up.cross(this.n);
-        this.u.normalize();
+        // this.u = this.up.cross(this.n);
+        // this.u.normalize();
 
-        this.v = this.n.cross(this.u);
-        this.v.normalize();
+        // this.v = this.n.cross(this.u);
+        // this.v.normalize();
 
     }
 

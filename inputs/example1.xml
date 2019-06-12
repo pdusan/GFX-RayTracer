@@ -1,5 +1,5 @@
 <?xml version="1.0" standalone="no" ?>
-<!DOCTYPE scene SYSTEM "scene.dtd">
+<!DOCTYPE scene SYSTEM "scene.dtd"> 
 
 <scene output_file="example1.png">
 	<background_color r="0.0" g="0.0" b="0.0"/>

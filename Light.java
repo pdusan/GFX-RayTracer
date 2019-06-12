@@ -13,7 +13,7 @@ import org.w3c.dom.Element;
 public class Light {
 
     private Document doc;
-    private int ambientColor, pointColor, parallelColor, spotColor;
+    public int ambientColor, pointColor, parallelColor, spotColor;
     private Point pointPos, spotPos;
     private Vector parallelDir, spotDir;
     private double fall1, fall2;
@@ -114,5 +114,9 @@ public class Light {
         } catch (Exception e) {
             return;
         }
+    }
+
+    public Point getPointPos() {
+        return this.pointPos;
     }
 }

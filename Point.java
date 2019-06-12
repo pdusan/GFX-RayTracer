@@ -29,12 +29,12 @@ public class Point {
         return new Point(newX, newY, newZ);
     }
 
-    public Point minus(Point p) {
+    public Vector minus(Point p) {
         double newX = this.x - p.x;
         double newY = this.y - p.y;
         double newZ = this.z - p.z;
 
-        return new Point(newX, newY, newZ);
+        return new Vector(newX, newY, newZ);
     }
 
     public double dot(Vector v) {

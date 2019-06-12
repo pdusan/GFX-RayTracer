@@ -8,4 +8,9 @@ public class Ray {
         this.origin = origin;
         this.direction = direction;
     }
+
+    @Override
+    public String toString() {
+        return "O: " + this.origin.toString() + "D: " + this.direction.toString();
+    }
 }
