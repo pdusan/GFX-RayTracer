@@ -1,3 +1,6 @@
+/**
+ * The Ray Class, each ray consists of an origin and a direction
+ */
 
 public class Ray {
 

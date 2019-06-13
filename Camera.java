@@ -1,15 +1,11 @@
-import java.awt.Color;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import javax.imageio.ImageIO;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 
+/**
+ * For parsing in all the camera information from the .xml file
+ */
 public class Camera {
     
     private Document doc;
@@ -21,25 +17,12 @@ public class Camera {
     private double width;
     private double height;
     private double bounces;
-    private double distance;
-    private Vector u, n, v;
 
     public Camera(Document doc) {
         this.doc = doc;
         initCam();
         
         this.yFieldOfView = this.height * this.xFieldOfView/this.width;
-        
-        this.distance = this.width/(2 * Math.tan(Math.toRadians(this.xFieldOfView)));
-        // this.n = location.minus(lookingAt).toVector();
-        // this.n.normalize();
-
-        // this.u = this.up.cross(this.n);
-        // this.u.normalize();
-
-        // this.v = this.n.cross(this.u);
-        // this.v.normalize();
-
     }
 
     private void initCam() {
@@ -86,7 +69,10 @@ public class Camera {
     public Point getLocation() {
         return this.location;
     }
-
+    
+    /**
+     * Constructs rays from the camera position through a given pixel on the image
+     */
     public Ray makeRay(double p, double q) {
 
         double x = Math.tan(Math.toRadians(this.xFieldOfView)) * ((2 * p - this.width)/this.width);

@@ -1,9 +1,7 @@
 import java.awt.Color;
-import java.awt.image.BufferedImage;
 import java.io.File;
 import java.util.ArrayList;
 
-import javax.imageio.ImageIO;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -12,6 +10,9 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 
+/**
+ * The scene class holds all the objects parsed in from the .xml file.
+ */
 public class Scene {
 
     private Document doc;

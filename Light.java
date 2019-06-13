@@ -1,122 +1,260 @@
-import java.awt.Color;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import javax.imageio.ImageIO;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.w3c.dom.Element;
 
+/**
+ * Here, all the light information is parsed in.
+ * I made sub classes for all the different types of lights in 
+ * an attempt to better organize the code and avoid too many fields in 
+ * the Light class itself
+ */
 public class Light {
 
     private Document doc;
-    public int ambientColor, pointColor, parallelColor, spotColor;
-    private Point pointPos, spotPos;
-    private Vector parallelDir, spotDir;
-    private double fall1, fall2;
+    private AmbientLight ambient;
+    private ArrayList<PointLight> point = new ArrayList<PointLight>();
+    private ArrayList<ParallelLight> parallel = new ArrayList<ParallelLight>();
+    private ArrayList<SpotLight> spot = new ArrayList<SpotLight>();
 
     public Light(Document doc) {
         this.doc = doc;
-        initAmbient();
-        initPoint();
-        initParallel();
-        initSpot();
+        initAmbient(this.doc.getElementsByTagName("ambient_light").item(0));
+        initPoint(this.doc.getElementsByTagName("point_light").item(0));
+        initParallel(this.doc.getElementsByTagName("parallel_light").item(0));
+        initSpot(this.doc.getElementsByTagName("spot_light").item(0));
     }
 
-    
-    private void initAmbient() {
-        NodeList ambientOptions = this.doc.getElementsByTagName("lights").item(0).getChildNodes().item(1).getChildNodes();
-        
-        float ambientRed = Float.parseFloat(ambientOptions.item(1).getAttributes().getNamedItem("r").getTextContent());
-        float ambientGreen = Float.parseFloat(ambientOptions.item(1).getAttributes().getNamedItem("g").getTextContent());
-        float ambientBlue = Float.parseFloat(ambientOptions.item(1).getAttributes().getNamedItem("b").getTextContent());
-        
-        Color ambient = new Color(ambientRed, ambientGreen, ambientBlue);
+    public static class AmbientLight {
+        private float r, g, b;
 
-        this.ambientColor = ambient.getRGB();
+        public AmbientLight(float r, float g, float b) {
+            this.b = b;
+            this.g = g;
+            this.r = r;
+        }
+
+        public HashMap<String, Float> getRgb() {
+            HashMap<String, Float> rgb = new HashMap<String, Float>();
+            rgb.put("r", this.r);
+            rgb.put("g", this.g);
+            rgb.put("b", this.b);
+
+            return rgb;
+        }
     }
 
-    private void initPoint() {
+    public static class PointLight {
+        private float r, g, b;
+        private Point position;
+
+        public PointLight(float r, float g, float b, Point pos) {
+            this.r = r;
+            this.g = g;
+            this.b = b;
+            this.position = pos;
+        }
+
+        public HashMap<String, Float> getRgb() {
+            HashMap<String, Float> rgb = new HashMap<String, Float>();
+            rgb.put("r", this.r);
+            rgb.put("g", this.g);
+            rgb.put("b", this.b);
+
+            return rgb;
+        }
+
+        public Point getPostition() {
+            return this.position;
+        }
+    }
+
+    public static class ParallelLight {
+        private float r, g, b;
+        private Vector direction;
+
+        public ParallelLight(float r, float g, float b, Vector dir) {
+            this.r = r;
+            this.g = g;
+            this.b = b;
+            this.direction = dir;
+        }
+
+        public HashMap<String, Float> getRgb() {
+            HashMap<String, Float> rgb = new HashMap<String, Float>();
+            rgb.put("r", this.r);
+            rgb.put("g", this.g);
+            rgb.put("b", this.b);
+
+            return rgb;
+        }
+
+        public Vector getDirection() {
+            return this.direction;
+        }
+    }
+
+    public static class SpotLight {
+        private float r, g, b;
+        private Point position;
+        private Vector direction;
+        private double alpha1, alpha2;
+
+        public SpotLight(float r, float g, float b, Point pos, 
+                Vector dir, double a1, double a2) {
+            this.r = r;
+            this.g = g;
+            this.b = b;
+            this.position = pos;
+            this.direction = dir;
+            this.alpha1 = a1;
+            this.alpha2 = a2;
+        }
+
+        public HashMap<String, Float> getRgb() {
+            HashMap<String, Float> rgb = new HashMap<String, Float>();
+            rgb.put("r", this.r);
+            rgb.put("g", this.g);
+            rgb.put("b", this.b);
+
+            return rgb;
+        }
+
+        public Vector getDirection() {
+            return this.direction;
+        }
+
+        public Point getPosition() {
+            return this.position;
+        }
+
+        public HashMap<String, Double> getFalloff() {
+            HashMap<String, Double> falloff = new HashMap<String, Double>();
+            falloff.put("a1", alpha1);
+            falloff.put("a2", alpha2);
+
+            return falloff;
+        }
+    }
+
+    private void initAmbient(Node ambientLight) {
+        NodeList ambientOptions = ambientLight.getChildNodes();
+        
+        float r = Float.parseFloat(ambientOptions.item(1).getAttributes().getNamedItem("r").getTextContent());
+        float g = Float.parseFloat(ambientOptions.item(1).getAttributes().getNamedItem("g").getTextContent());
+        float b = Float.parseFloat(ambientOptions.item(1).getAttributes().getNamedItem("b").getTextContent());
+        
+        AmbientLight amb = new AmbientLight(r, g, b);
+        this.ambient = amb;
+    }
+
+    private void initPoint(Node pointLight) {
         try {
-            NodeList pointOptions = this.doc.getElementsByTagName("lights").item(0).getChildNodes().item(3).getChildNodes();
+            NodeList pointOptions = pointLight.getChildNodes();
 
-            float pointRed = Float.parseFloat(pointOptions.item(1).getAttributes().getNamedItem("r").getTextContent());
-            float pointGreen = Float.parseFloat(pointOptions.item(1).getAttributes().getNamedItem("g").getTextContent());
-            float pointBlue = Float.parseFloat(pointOptions.item(1).getAttributes().getNamedItem("b").getTextContent());
+            float r = Float.parseFloat(pointOptions.item(1).getAttributes().getNamedItem("r").getTextContent());
+            float g = Float.parseFloat(pointOptions.item(1).getAttributes().getNamedItem("g").getTextContent());
+            float b = Float.parseFloat(pointOptions.item(1).getAttributes().getNamedItem("b").getTextContent());
 
-            Color point = new Color(pointRed, pointGreen, pointBlue);
+            double x = Double.parseDouble(pointOptions.item(3).getAttributes().getNamedItem("x").getTextContent());
+            double y = Double.parseDouble(pointOptions.item(3).getAttributes().getNamedItem("y").getTextContent());
+            double z = Double.parseDouble(pointOptions.item(3).getAttributes().getNamedItem("z").getTextContent());
 
-            this.pointColor = point.getRGB();
+            Point pos = new Point(x, y, z);
 
-            double posX = Double.parseDouble(pointOptions.item(3).getAttributes().getNamedItem("x").getTextContent());
-            double posY = Double.parseDouble(pointOptions.item(3).getAttributes().getNamedItem("y").getTextContent());
-            double posZ = Double.parseDouble(pointOptions.item(3).getAttributes().getNamedItem("z").getTextContent());
+            this.point.add(new PointLight(r, g, b, pos));
 
-            this.pointPos = new Point(posX, posY, posZ);
-
+            Node next = pointLight.getNextSibling();
+            while (next.getNodeName() != "point_light")
+                next = next.getNextSibling();
+            if (next.getNodeName() == "point_light")
+                initPoint(next);
+            else return;
         } catch (Exception e) {
             return;
         }
     }
     
-    private void initParallel() {
+    private void initParallel(Node parallelLight) {
         try {
-            NodeList parallelOptions = this.doc.getElementsByTagName("lights").item(0).getChildNodes().item(5).getChildNodes();
+            NodeList parallelOptions = parallelLight.getChildNodes();
 
-            float parallelRed = Float.parseFloat(parallelOptions.item(1).getAttributes().getNamedItem("r").getTextContent());
-            float parallelGreen = Float.parseFloat(parallelOptions.item(1).getAttributes().getNamedItem("g").getTextContent());
-            float parallelBlue= Float.parseFloat(parallelOptions.item(1).getAttributes().getNamedItem("b").getTextContent());
+            float r = Float.parseFloat(parallelOptions.item(1).getAttributes().getNamedItem("r").getTextContent());
+            float g = Float.parseFloat(parallelOptions.item(1).getAttributes().getNamedItem("g").getTextContent());
+            float b= Float.parseFloat(parallelOptions.item(1).getAttributes().getNamedItem("b").getTextContent());
 
-            Color parallel = new Color(parallelRed, parallelGreen, parallelBlue);
+            double x = Double.parseDouble(parallelOptions.item(3).getAttributes().getNamedItem("x").getTextContent());
+            double y = Double.parseDouble(parallelOptions.item(3).getAttributes().getNamedItem("y").getTextContent());
+            double z = Double.parseDouble(parallelOptions.item(3).getAttributes().getNamedItem("z").getTextContent());
 
-            this.parallelColor = parallel.getRGB();
+            Vector dir = new Vector(x, y, z);
 
-            double dirX = Double.parseDouble(parallelOptions.item(3).getAttributes().getNamedItem("x").getTextContent());
-            double dirY = Double.parseDouble(parallelOptions.item(3).getAttributes().getNamedItem("y").getTextContent());
-            double dirZ = Double.parseDouble(parallelOptions.item(3).getAttributes().getNamedItem("z").getTextContent());
+            this.parallel.add(new ParallelLight(r, g, b, dir));
 
-            this.parallelDir = new Vector(dirX, dirY, dirZ);
-
+            Node next = parallelLight.getNextSibling();
+            while (next.getNodeName() != "parallel_light")
+                next = next.getNextSibling();
+            if (next.getNodeName() == "parallel_light")
+                initPoint(next);
+            else return;
         } catch (Exception e) {
             return;
         }
     }
 
-    private void initSpot() {
+    private void initSpot(Node spotLight) {
         try {
-            NodeList spotOptions = this.doc.getElementsByTagName("lights").item(0).getChildNodes().item(7).getChildNodes();
+            NodeList spotOptions = spotLight.getChildNodes();
 
-            float spotRed = Float.parseFloat(spotOptions.item(1).getAttributes().getNamedItem("r").getTextContent());
-            float spotGreen = Float.parseFloat(spotOptions.item(1).getAttributes().getNamedItem("g").getTextContent());
-            float spotBlue = Float.parseFloat(spotOptions.item(1).getAttributes().getNamedItem("b").getTextContent());
+            float r = Float.parseFloat(spotOptions.item(1).getAttributes().getNamedItem("r").getTextContent());
+            float g = Float.parseFloat(spotOptions.item(1).getAttributes().getNamedItem("g").getTextContent());
+            float b = Float.parseFloat(spotOptions.item(1).getAttributes().getNamedItem("b").getTextContent());
 
-            Color spot = new Color(spotRed, spotGreen, spotBlue);
+            double x = Double.parseDouble(spotOptions.item(3).getAttributes().getNamedItem("x").getTextContent());
+            double y = Double.parseDouble(spotOptions.item(3).getAttributes().getNamedItem("y").getTextContent());
+            double z = Double.parseDouble(spotOptions.item(3).getAttributes().getNamedItem("z").getTextContent());
 
-            this.spotColor = spot.getRGB();
-
-            double posX = Double.parseDouble(spotOptions.item(3).getAttributes().getNamedItem("x").getTextContent());
-            double posY = Double.parseDouble(spotOptions.item(3).getAttributes().getNamedItem("y").getTextContent());
-            double posZ = Double.parseDouble(spotOptions.item(3).getAttributes().getNamedItem("z").getTextContent());
-
-            this.spotPos = new Point(posX, posY, posZ);
+            Point pos = new Point(x, y, z);
             
             double dirX = Double.parseDouble(spotOptions.item(5).getAttributes().getNamedItem("x").getTextContent());
             double dirY = Double.parseDouble(spotOptions.item(5).getAttributes().getNamedItem("y").getTextContent());
             double dirZ = Double.parseDouble(spotOptions.item(5).getAttributes().getNamedItem("z").getTextContent());
 
-            this.spotDir = new Vector(dirX, dirY, dirZ);
+            Vector dir = new Vector(dirX, dirY, dirZ);
 
-            this.fall1 = Double.parseDouble(spotOptions.item(7).getAttributes().getNamedItem("alpha1").getTextContent());
-            this.fall2 = Double.parseDouble(spotOptions.item(7).getAttributes().getNamedItem("alpha2").getTextContent());
+            double a1 = Double.parseDouble(spotOptions.item(7).getAttributes().getNamedItem("alpha1").getTextContent());
+            double a2 = Double.parseDouble(spotOptions.item(7).getAttributes().getNamedItem("alpha2").getTextContent());
+
+            this.spot.add(new SpotLight(r, g, b, pos, dir, a1, a2));
+
+            Node next = spotLight.getNextSibling();
+            while (next.getNodeName() != "parallel_light")
+                next = next.getNextSibling();
+            if (next.getNodeName() == "parallel_light")
+                initPoint(next);
+            else return;
+
         } catch (Exception e) {
             return;
         }
     }
 
-    public Point getPointPos() {
-        return this.pointPos;
+    public AmbientLight getAmbient() {
+        return this.ambient;
+    }
+    
+    public ArrayList<PointLight> getPoint() {
+        return this.point;
+    }
+
+    public ArrayList<ParallelLight> getParallel() {
+        return this.parallel;
+    }
+
+    public ArrayList<SpotLight> getSpot() {
+        return this.spot;
     }
 }

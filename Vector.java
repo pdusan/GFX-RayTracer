@@ -1,3 +1,6 @@
+/**
+ * Vector class with some basic operations
+ */
 
 public class Vector {
 
@@ -29,6 +32,14 @@ public class Vector {
         return new Vector(newX, newY, newZ);
     }
 
+    public Point plus(Point p) {
+        double newX = this.x + p.x;
+        double newY = this.y + p.y;
+        double newZ = this.z + p.z;
+
+        return new Point(newX, newY, newZ);
+    }
+
     public Vector minus(Vector v) {
         double newX = this.x - v.x;
         double newY = this.y - v.y;
@@ -39,14 +50,6 @@ public class Vector {
 
     public double dot(Vector v) {
         return this.x * v.x + this.y * v.y + this.z * v.z;
-    }
-
-    public double dot(Point p) {
-        return this.x * p.x + this.y * p.y + this.z * p.z;
-    }
-
-    public double dot(Normal n) {
-        return this.x * n.x + this.y * n.y + this.z * n.z;
     }
     
     public void normalize() {

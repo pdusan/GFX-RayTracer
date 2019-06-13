@@ -1,9 +1,6 @@
 import java.awt.Color;
-import java.awt.image.BufferedImage;
-import java.io.File;
-import javax.imageio.ImageIO;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
+import java.util.ArrayList;
+import java.util.HashMap;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
@@ -17,15 +14,23 @@ public class Sphere extends Shape {
     private float surfaceRed, surfaceGreen, surfaceBlue;
     private float ka, kd, ks;
     private double exp, reflect, transmit, refract;
-    private Point translateBy;
+    private Vector translateBy;
     private double scaleX, scaleY, scaleZ, rotateX, rotateY, rotateZ;
-    private Light light;
+    private Light.AmbientLight ambient;
+    private ArrayList<Light.ParallelLight> parallel;
+    private ArrayList<Light.PointLight> point;
+    private ArrayList<Light.SpotLight> spot;
     private Point eyeLocation;
+
+    //=================CONSTRUCTOR AND INITIALIZATION FUNCTIONS (PARSERS)==============================================
 
     public Sphere(Node sphere, Light light, Camera cam) {
         this.eyeLocation = cam.getLocation();
 
-        this.light = light;
+        this.ambient = light.getAmbient();
+        this.parallel = light.getParallel();
+        this.point = light.getPoint();
+        this.spot = light.getSpot();
 
         this.radius = Double.parseDouble(sphere.getAttributes().getNamedItem("radius").getTextContent());
 
@@ -44,7 +49,7 @@ public class Sphere extends Shape {
         initTransforms(transform);
 
         if (this.translateBy != null)
-            this.center = this.center.plus(this.translateBy);
+            this.center = this.translateBy.plus(this.center);
     }
 
     private void initMaterial(Node material) {
@@ -79,7 +84,7 @@ public class Sphere extends Shape {
             double posX = Double.parseDouble(translate.getAttributes().getNamedItem("x").getTextContent());
             double posY = Double.parseDouble(translate.getAttributes().getNamedItem("y").getTextContent());
             double posZ = Double.parseDouble(translate.getAttributes().getNamedItem("z").getTextContent());
-            this.translateBy = new Point(posX, posY, posZ);
+            this.translateBy = new Vector(posX, posY, posZ);
 
             Node scale = transform.getChildNodes().item(3);
             double scaleX = Double.parseDouble(scale.getAttributes().getNamedItem("x").getTextContent());
@@ -94,6 +99,10 @@ public class Sphere extends Shape {
         }
     }
 
+    /**
+     * For determining whether or not a ray intersects the sphere's surface
+     * t0 is the closer point, t1 is only returned if t0 is less than 0
+     */
     public double hit(Ray ray) {
 
         double b = 2 * (ray.direction.x * (ray.origin.x - this.center.x) + ray.direction.y * 
@@ -115,58 +124,104 @@ public class Sphere extends Shape {
 
                 if (t1 > 0)
                     return t1;
-                else return -1;
+                 return -1;
             }
         }
     }
 
-    public int getColor(double t, Ray ray) {
-        float ambientRed = 0;
-        float ambientGreen = 0;
-        float ambientBlue = 0;
-        float diffuseRed = 0;
-        float diffuseGreen = 0;
-        float diffuseBlue = 0;
-        float specRed = 0;
-        float specGreen = 0;
-        float specBlue = 0;
+    //======================PHONG ILLUMINATION MODEL FUNCTIONS=========================
+    private HashMap<String, Float> ambient() {
+        float r = this.ka * this.surfaceRed * this.ambient.getRgb().get("r");
+        float g = this.ka * this.surfaceGreen * this.ambient.getRgb().get("g");
+        float b = this.ka * this.surfaceBlue  * this.ambient.getRgb().get("b");
+        HashMap<String, Float> ambientMap = new HashMap<String, Float>();
 
-        ambientRed = this.ka * this.surfaceRed;
-        ambientGreen = this.ka * this.surfaceGreen;
-        ambientBlue = this.ka * this.surfaceBlue;
-        
-        if (this.light.getPointPos() != null) {
-            double x = ray.origin.x + t * ray.direction.x;
-            double y = ray.origin.y + t * ray.direction.y;
-            double z = ray.origin.z + t * ray.direction.z;
-            Point p = new Point(x, y, z);
+        ambientMap.put("r", r);
+        ambientMap.put("g", g);
+        ambientMap.put("b", b);
 
-            Vector n = this.center.minus(p);
+        return ambientMap;
+    }
+
+    private HashMap<String, Float> diffuse(Point p) {
+        HashMap<String, Float> diffuseMap = new HashMap<String, Float>();
+
+        if (this.parallel.size() > 0) {
+            Vector n = p.minus(this.center);
             n.normalize();
             
             Vector v = this.eyeLocation.minus(p);
             v.normalize();
 
-            Vector l = p.minus(this.light.getPointPos());
+            Vector l = this.parallel.get(0).getDirection().times(-1);
+            l.normalize();
+
+            float r = (float) (this.kd * this.surfaceRed * Math.max(l.dot(n), 0));
+            float g = (float) (this.kd * this.surfaceGreen * Math.max(l.dot(n), 0));
+            float b = (float) (this.kd * this.surfaceBlue * Math.max(l.dot(n), 0));
+
+            diffuseMap.put("r", r);
+            diffuseMap.put("g", g);
+            diffuseMap.put("b", b);
+        }
+        else {
+            diffuseMap.put("r", (float) 0.0);
+            diffuseMap.put("g", (float) 0.0);
+            diffuseMap.put("b", (float) 0.0);
+        }
+        return diffuseMap;
+    }
+
+    private HashMap<String, Float> specular(Point p) {
+        HashMap<String, Float> specularMap = new HashMap<String, Float>();
+
+        if (this.parallel.size() > 0) {
+            Vector n = p.minus(this.center);
+            n.normalize();
+            
+            Vector v = this.eyeLocation.minus(p);
+            v.normalize();
+
+            Vector l = this.parallel.get(0).getDirection();
             l.normalize();
 
             Vector r = n.times(2 * l.dot(n)).minus(l).times(-1);
             r.normalize();
 
-            diffuseRed += this.kd * this.surfaceRed * Math.max(l.dot(n), 0);
-            diffuseGreen += this.kd * this.surfaceGreen * Math.max(l.dot(n), 0);
-            diffuseBlue += this.kd * this.surfaceBlue * Math.max(l.dot(n), 0);
+            float specR = (float) (this.kd * Math.pow(Math.max(r.dot(v), 0), this.exp));
+            float specG = (float) (this.kd * Math.pow(Math.max(r.dot(v), 0), this.exp));
+            float specB = (float) (this.kd * Math.pow(Math.max(r.dot(v), 0), this.exp));
 
-            if (l.dot(n) > 0) {
-                specRed += this.ks * this.surfaceRed * Math.pow(Math.max(r.dot(v), 0), this.exp);
-                specGreen += this.ks * this.surfaceGreen * Math.pow(Math.max(r.dot(v), 0), this.exp);
-                // System.out.println(specRed);
-                specBlue += this.ks * this.surfaceBlue * Math.pow(Math.max(r.dot(v), 0), this.exp);
-            }
+            specularMap.put("r", specR);
+            specularMap.put("g", specG);
+            specularMap.put("b", specB);
         }
-        float finalRed = ambientRed + diffuseRed + specRed;
-        float finalGreen = ambientGreen + diffuseGreen + specGreen;
-        float finalBlue = ambientBlue + diffuseBlue + specBlue;
+        else {
+            specularMap.put("r", (float) 0.0);
+            specularMap.put("g", (float) 0.0);
+            specularMap.put("b", (float) 0.0);
+        }
+        return specularMap;
+    }
+    
+    /**
+     * Combines the ambient, diffuse and specular components 
+     * into the final color at the ray intersection
+     */
+    public int getColor(double t, Ray ray) {
+        double x = ray.origin.x + t * ray.direction.x;
+        double y = ray.origin.y + t * ray.direction.y;
+        double z = ray.origin.z + t * ray.direction.z;
+        Point p = new Point(x, y, z);
+        
+        HashMap<String, Float> ambientMap = this.ambient();
+        HashMap<String, Float> diffuseMap = this.diffuse(p);
+        HashMap<String, Float> specularMap = this.specular(p);
+
+        float finalRed = ambientMap.get("r") + diffuseMap.get("r") + specularMap.get("r");
+        float finalGreen = ambientMap.get("g") + diffuseMap.get("g") + specularMap.get("g");
+        float finalBlue = ambientMap.get("b") + diffuseMap.get("b") + specularMap.get("b");
+
         if (finalRed > 1) finalRed = 1;
         if (finalGreen > 1) finalGreen = 1;
         if (finalBlue > 1) finalBlue = 1;

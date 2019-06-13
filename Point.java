@@ -1,4 +1,7 @@
-
+/**
+ * Basic Point Class, contains important minus() function
+ * for creating vectors as a difference between two points
+ */
 public class Point {
 
     public double x, y, z;
@@ -21,36 +24,12 @@ public class Point {
         this.z = p.z;
     }
 
-    public Point plus(Point p) {
-        double newX = this.x + p.x;
-        double newY = this.y + p.y;
-        double newZ = this.z + p.z;
-
-        return new Point(newX, newY, newZ);
-    }
-
     public Vector minus(Point p) {
         double newX = this.x - p.x;
         double newY = this.y - p.y;
         double newZ = this.z - p.z;
 
         return new Vector(newX, newY, newZ);
-    }
-
-    public double dot(Vector v) {
-        return this.x * v.x + this.y * v.y + this.z * v.z;
-    }
-
-    public double dot(Point p) {
-        return this.x * p.x + this.y * p.y + this.z * p.z;
-    }
-
-    public double dot(Normal n) {
-        return this.x * n.x + this.y * n.y + this.z * n.z;
-    }
-
-    public Vector toVector() {
-        return new Vector(this.x, this.y, this.z);
     }
     
     @Override
